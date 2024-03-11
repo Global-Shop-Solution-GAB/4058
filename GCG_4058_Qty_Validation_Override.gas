@@ -1,0 +1,230 @@
+Program.Sub.ScreenSU.Start
+gui.Form1..create
+gui.Form1..caption("Password Required")
+gui.Form1..size(2760,2145)
+gui.Form1..minx(0)
+gui.Form1..miny(0)
+gui.Form1..position(0,0)
+gui.Form1..event(unload,form1_unload)
+gui.Form1..alwaysontop(False)
+gui.Form1..fontname("Arial")
+gui.Form1..fontsize(8)
+gui.Form1..forecolor(0)
+gui.Form1..fontstyle(,,,,)
+gui.Form1..BackColor(-2147483633)
+gui.Form1..controlbox(True)
+gui.Form1..maxbutton(True)
+gui.Form1..minbutton(True)
+gui.Form1..mousepointer(0)
+gui.Form1..moveable(True)
+gui.Form1..sizeable(True)
+gui.Form1..ShowInTaskBar(True)
+gui.Form1..titlebar(True)
+gui.Form1.lbl1.create(label,"Enter Override Password",True,1935,255,1,155,200,True,0,Arial,8,-2147483633,0)
+gui.Form1.lbl1.defaultvalue("")
+gui.Form1.lbl1.controlgroup(0)
+gui.Form1.txtPassword.create(textbox,"",True,2265,300,0,145,445,True,0,Arial,8,-2147483643,1)
+gui.Form1.txtPassword.defaultvalue("")
+gui.Form1.txtPassword.controlgroup(0)
+gui.Form1.cmdEnter.create(button)
+gui.Form1.cmdEnter.caption("Enter")
+gui.Form1.cmdEnter.visible(True)
+gui.Form1.cmdEnter.size(975,375)
+gui.Form1.cmdEnter.zorder(0)
+gui.Form1.cmdEnter.position(115,995)
+gui.Form1.cmdEnter.enabled(True)
+gui.Form1.cmdEnter.fontname("Arial")
+gui.Form1.cmdEnter.fontsize(8)
+gui.Form1.cmdEnter.event(click,cmdenter_click)
+gui.Form1.cmdEnter.defaultvalue("")
+gui.Form1.cmdEnter.controlgroup(0)
+
+
+gui.Form2..create
+gui.Form2..caption("Qty Validation Maintenance")
+gui.Form2..size(2925,1950)
+gui.Form2..minx(0)
+gui.Form2..miny(0)
+gui.Form2..position(0,0)
+gui.Form2..event(unload,form2_unload)
+gui.Form2..alwaysontop(False)
+gui.Form2..fontname("Arial")
+gui.Form2..fontsize(8)
+gui.Form2..forecolor(0)
+gui.Form2..fontstyle(,,,,)
+gui.Form2..BackColor(-2147483633)
+gui.Form2..controlbox(True)
+gui.Form2..maxbutton(True)
+gui.Form2..minbutton(True)
+gui.Form2..mousepointer(0)
+gui.Form2..moveable(True)
+gui.Form2..sizeable(True)
+gui.Form2..ShowInTaskBar(True)
+gui.Form2..titlebar(True)
+gui.Form2.txtNewPass.create(textbox,"",True,2475,300,0,110,350,True,0,Arial,8,-2147483643,1)
+gui.Form2.txtNewPass.defaultvalue("")
+gui.Form2.txtNewPass.controlgroup(0)
+gui.Form2.cmdEnter2.create(button)
+gui.Form2.cmdEnter2.caption("Enter")
+gui.Form2.cmdEnter2.visible(True)
+gui.Form2.cmdEnter2.size(855,375)
+gui.Form2.cmdEnter2.zorder(0)
+gui.Form2.cmdEnter2.position(100,800)
+gui.Form2.cmdEnter2.enabled(True)
+gui.Form2.cmdEnter2.fontname("Arial")
+gui.Form2.cmdEnter2.fontsize(8)
+gui.Form2.cmdEnter2.event(click,cmdenter2_click)
+gui.Form2.cmdEnter2.defaultvalue("")
+gui.Form2.cmdEnter2.controlgroup(0)
+gui.Form2.lbl1.create(label,"Create New Password",True,1935,255,1,125,140,True,0,Arial,8,-2147483633,0)
+gui.Form2.lbl1.defaultvalue("")
+gui.Form2.lbl1.controlgroup(0)
+
+
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+'Quote 6083
+'Password protect override of quantity validation
+
+F.Intrinsic.Control.If(V.Caller.Hook,=,45910)
+	V.Passed.777777.Set(1)
+	Gui.Form1.txtPassword.PasswordChar("*")
+	Gui.Form1..Show
+F.Intrinsic.Control.Else
+	Gui.Form2..Show
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_4058_Qty_Validation_Override.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+Function.Intrinsic.Control.EndIf
+
+
+Program.Sub.Main.End
+
+program.sub.cmdenter_click.start
+F.Intrinsic.Control.SetErrorHandler("cmdenter_click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sSQL.Declare(String)
+
+F.ODBC.Connection!conx.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+F.ODBC.Connection!conx.OpenRecordsetRO("rst","SELECT * FROM GCG_4058_MAINT")
+
+F.Intrinsic.Control.If(V.ODBC.conx!rst.EOF,=,True)
+	F.Intrinsic.UI.Msgbox("Password has not been set from Quantity Validation Maintenance screen","Unable to Override")
+	F.ODBC.conx!rst.Close
+	F.ODBC.Connection!conx.Close
+	F.Intrinsic.Control.CallSub(Form1_unload)
+F.Intrinsic.Control.Else
+	'If the entered password matches the password from QTY_VAL_PASS, then process the quantity
+	F.Intrinsic.Control.If(V.ODBC.conx!rst.FieldValTrim!QTY_VAL_PASS,=,V.Screen.Form1!txtPassword.Text)
+		V.Passed.777777.Set(0)
+		F.ODBC.conx!rst.Close
+		F.ODBC.Connection!conx.Close
+		F.Intrinsic.Control.CallSub(Form1_unload)
+		'Unlock override if password match
+	F.Intrinsic.Control.Else
+		F.Intrinsic.UI.Msgbox("Invalid password unable to process","Unable to Override")
+		F.ODBC.conx!rst.Close
+		F.ODBC.Connection!conx.Close
+		F.Intrinsic.Control.ExitSub
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdenter_click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_4058_Qty_Validation_Override.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+Function.Intrinsic.Control.EndIf
+
+
+program.sub.cmdenter_click.end
+
+program.sub.form1_unload.start
+F.Intrinsic.Control.End
+
+program.sub.form1_unload.end
+
+program.sub.cmdenter2_click.start
+F.Intrinsic.Control.SetErrorHandler("cmdenter2_click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+
+
+V.Local.sSQL.Declare(String)
+V.Local.sRet.Declare(String)
+
+F.Intrinsic.Control.If(V.Screen.Form2!txtNewPass.Text,=,"")
+	F.Intrinsic.UI.Msgbox("Unable to create password if password field is blank")
+	F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!conx.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+
+F.ODBC.Connection!conx.OpenRecordsetRW("rst","SELECT * FROM GCG_4058_MAINT")
+F.Intrinsic.Control.If(V.ODBC.conx!rst.EOF,=,False)
+	F.Intrinsic.UI.Msgbox("Are you sure you want to modify the password?",,4,V.Local.sRet)
+	F.Intrinsic.Control.If(V.Local.sRet,=,7)
+		F.Intrinsic.Control.CallSub(Form2_unload)
+	F.Intrinsic.Control.ElseIf(V.Local.sRet,=,6)
+		F.ODBC.Connection!conx.Execute("DELETE FROM GCG_4058_MAINT")
+		F.ODBC.conx!rst.AddNew
+		F.ODBC.conx!rst.Set!QTY_VAL_PASS(V.Screen.Form2!txtNewPass.Text)
+		F.ODBC.conx!rst.Set!USER_LAST_CHANGED(V.Caller.User)
+		F.ODBC.conx!rst.Set!DATECHANGED(V.Ambient.Date)
+		F.ODBC.conx!rst.Update
+		F.ODBC.conx!rst.Close
+		F.ODBC.Connection!conx.Close
+		F.Intrinsic.Control.CallSub(Form2_unload)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Else
+	F.ODBC.conx!rst.AddNew
+	F.ODBC.conx!rst.Set!QTY_VAL_PASS(V.Screen.Form2!txtNewPass.Text)
+	F.ODBC.conx!rst.Set!USER_LAST_CHANGED(V.Caller.User)
+	F.ODBC.conx!rst.Set!DATECHANGED(V.Ambient.Date)
+	F.ODBC.conx!rst.Update
+	F.Intrinsic.UI.Msgbox("Password is now set")
+	F.ODBC.conx!rst.Close
+	F.ODBC.Connection!conx.Close
+	F.Intrinsic.Control.CallSub(Form2_unload)
+F.Intrinsic.Control.EndIf
+
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdenter2_click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_4058_Qty_Validation_Override.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+Function.Intrinsic.Control.EndIf
+
+
+program.sub.cmdenter2_click.end
+
+program.sub.form2_unload.start
+F.Intrinsic.Control.End
+
+program.sub.form2_unload.end
+
+Program.Sub.Comments.Start
+${$0$}$Qty_Validation_Override$}$AGM$}$12/29/2014
+Program.Sub.Comments.End
+
